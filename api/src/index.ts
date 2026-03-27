@@ -171,20 +171,29 @@ async function bootstrap(): Promise<void> {
     });
   });
 
-  const dbOk = await checkConnection();
-  if (!dbOk) throw new Error('Cannot connect to database');
-
-  if (config.env !== 'test') {
-    try {
-      startWorkers();
-      await scheduleRecurringJobs();
-    } catch (err) {
-      app.log.warn({ err }, 'pg-boss scheduling failed — run migrations then restart. API continuing without background jobs.');
-    }
-  }
-
+  // Start listening FIRST so Cloud Run health check passes immediately
   await app.listen({ port: config.port, host: '0.0.0.0' });
   app.log.info(`Hola Prime API v5.0 listening on :${config.port}`);
+
+  // DB check and jobs run AFTER port is open (non-blocking)
+  checkConnection().then(dbOk => {
+    if (!dbOk) {
+      console.error('[startup] WARNING: Database connection failed. Check DATABASE_URL secret.');
+    } else {
+      app.log.info('[startup] Database connected successfully');
+    }
+  });
+
+  if (config.env !== 'test') {
+    setTimeout(async () => {
+      try {
+        startWorkers();
+        await scheduleRecurringJobs();
+      } catch (err) {
+        app.log.warn({ err }, 'pg-boss scheduling failed — continuing without background jobs.');
+      }
+    }, 5000); // 5 second delay to let DB settle
+  }
 }
 
 bootstrap().catch((err) => {
