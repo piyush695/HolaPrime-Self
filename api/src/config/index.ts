@@ -17,7 +17,7 @@ function optional(key: string, fallback: string): string {
 
 export const config = {
   env:  optional('NODE_ENV', 'development') as 'development' | 'production' | 'test',
-  port: parseInt(optional('PORT', '3001'), 10),
+  port: parseInt(optional('PORT', '8080'), 10),
   frontendUrl: optional('FRONTEND_URL', 'http://localhost:5173'),
 
   db: {
