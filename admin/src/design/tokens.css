@@ -1,0 +1,110 @@
+/* ── Hola Prime Design System Tokens ──────────────────────────────────────── */
+
+:root {
+  /* Core palette — exact values from Figma plugin C object */
+  --hp-bg:     #13151B;
+  --hp-surfA:  #1C1F27;
+  --hp-surfB:  #252931;
+  --hp-surfC:  #2E3240;
+  --hp-bordA:  #353947;
+  --hp-bordB:  #454A5B;
+
+  --hp-blue:    #3F8FE0;
+  --hp-blueDim: #162F4F;
+  --hp-green:   #38BA82;
+  --hp-grnDim:  #123B26;
+  --hp-gold:    #F5B326;
+  --hp-gldDim:  #362A0A;
+  --hp-red:     #EB5454;
+  --hp-redDim:  #3D1313;
+
+  --hp-white:  #F5F8FF;
+  --hp-txtA:   #CCD2E3;
+  --hp-txtB:   #878FA4;
+  --hp-txtC:   #4F5669;
+  --hp-silver: #9CAABF;
+  --hp-bronze: #BF5B10;
+  --hp-purple: #8B5CF6;
+  --hp-purDim: #2D1B69;
+  --hp-teal:   #14B8A6;
+  --hp-telDim: #0D2E2A;
+  --hp-orange: #F97316;
+  --hp-orgDim: #431407;
+
+  /* Semantic aliases */
+  --color-bg:        var(--hp-bg);
+  --color-surface:   var(--hp-surfA);
+  --color-surface-2: var(--hp-surfB);
+  --color-surface-3: var(--hp-surfC);
+  --color-border:    var(--hp-bordA);
+  --color-border-2:  var(--hp-bordB);
+  --color-text:      var(--hp-white);
+  --color-text-muted:var(--hp-txtA);
+  --color-text-dim:  var(--hp-txtB);
+  --color-text-faint:var(--hp-txtC);
+  --color-primary:   var(--hp-blue);
+  --color-success:   var(--hp-green);
+  --color-warning:   var(--hp-gold);
+  --color-danger:    var(--hp-red);
+
+  /* Layout */
+  --sidebar-width:  200px;
+  --topbar-height:  52px;
+  --content-pad:    24px;
+
+  /* Typography */
+  --font: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Radii */
+  --r-sm:  4px;
+  --r-md:  6px;
+  --r-lg:  10px;
+  --r-xl:  14px;
+  --r-full: 9999px;
+}
+
+/* ── Reset ────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 14px; }
+
+body {
+  font-family: var(--font);
+  background:  var(--color-bg);
+  color:       var(--color-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--color-primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--r-md);
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--color-primary);
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--hp-bordB); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--hp-txtC); }

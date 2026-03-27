@@ -1,0 +1,24 @@
+/* Hola Prime Trader Portal — Design Tokens (same system as admin) */
+:root {
+  --hp-bg:      #13151B;
+  --hp-surfA:   #1C1F27;
+  --hp-surfB:   #252931;
+  --hp-blue:    #3F8FE0;
+  --hp-green:   #38BA82;
+  --hp-gold:    #F5B326;
+  --hp-red:     #EB5454;
+  --hp-white:   #F5F8FF;
+  --hp-txtA:    #CCD2E3;
+  --hp-txtB:    #878FA4;
+  --hp-txtC:    #4F5669;
+  --hp-bordA:   #353947;
+  --font: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body {
+  font-family: var(--font);
+  background: var(--hp-bg);
+  color: var(--hp-white);
+  -webkit-font-smoothing: antialiased;
+}

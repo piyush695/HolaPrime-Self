@@ -1,0 +1,95 @@
+steps:
+  # ── Backend ────────────────────────────────────────────────────────────────
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-backend'
+    args:
+      - build
+      - -t
+      - gcr.io/$PROJECT_ID/holaprime-admin-api:$COMMIT_SHA
+      - -t
+      - gcr.io/$PROJECT_ID/holaprime-admin-api:latest
+      - ./api
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-backend'
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/holaprime-admin-api:$COMMIT_SHA
+    waitFor: ['build-backend']
+
+  # ── Frontend ───────────────────────────────────────────────────────────────
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-frontend'
+    args:
+      - build
+      - -t
+      - gcr.io/$PROJECT_ID/holaprime-admin-panel:$COMMIT_SHA
+      - -t
+      - gcr.io/$PROJECT_ID/holaprime-admin-panel:latest
+      - --build-arg
+      - VITE_API_URL=https://api.holaprimemarkets.com
+      - ./admin
+
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-frontend'
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/holaprime-admin-panel:$COMMIT_SHA
+    waitFor: ['build-frontend']
+
+  # ── Database migrations ─────────────────────────────────────────────────────
+
+  - name: 'gcr.io/$PROJECT_ID/holaprime-admin-api:$COMMIT_SHA'
+    id: 'run-migrations'
+    entrypoint: 'node'
+    args: ['dist/db/migrate.js']
+    env:
+      - 'DATABASE_URL=${_DATABASE_URL}'
+    waitFor: ['push-backend']
+
+  # ── Deploy backend to Cloud Run ─────────────────────────────────────────────
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-backend'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - holaprime-admin-api
+      - --image=gcr.io/$PROJECT_ID/holaprime-admin-api:$COMMIT_SHA
+      - --region=us-central1
+      - --platform=managed
+      - --allow-unauthenticated
+      - --min-instances=1
+      - --max-instances=10
+      - --memory=512Mi
+      - --cpu=1
+      - --set-env-vars=NODE_ENV=production
+      - --set-secrets=DATABASE_URL=holaprime-db-url:latest,REDIS_URL=holaprime-redis-url:latest,JWT_SECRET=holaprime-jwt-secret:latest
+    waitFor: ['run-migrations']
+
+  # ── Deploy frontend to Cloud Run ────────────────────────────────────────────
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-frontend'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - holaprime-admin-panel
+      - --image=gcr.io/$PROJECT_ID/holaprime-admin-panel:$COMMIT_SHA
+      - --region=us-central1
+      - --platform=managed
+      - --allow-unauthenticated
+      - --min-instances=1
+      - --max-instances=5
+      - --memory=256Mi
+    waitFor: ['push-frontend']
+
+substitutions:
+  _DATABASE_URL: '${DATABASE_URL}'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
