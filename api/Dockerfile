@@ -1,12 +1,11 @@
 FROM node:22-alpine
 WORKDIR /app
 
-COPY api/package*.json ./
+COPY package*.json ./
 RUN npm install --ignore-scripts
 
-COPY api/ .
+COPY . .
 
-# Cloud Run injects PORT=8080 — the API reads process.env.PORT automatically
 ENV PORT=8080
 EXPOSE 8080
 CMD ["npx", "tsx", "src/index.ts"]
