@@ -1,3 +1,4 @@
+import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './lib/api.js';
@@ -14,7 +15,8 @@ import Risk       from './pages/Risk.js';
 // Phase 2
 import CRM         from './pages/phase2/CRM.js';
 import Campaigns   from './pages/phase2/Campaigns.js';
-import WhatsApp    from './pages/phase2/WhatsApp.js';
+import WhatsApp          from './pages/phase2/WhatsApp.js';
+import WhatsAppTemplates from './pages/phase2/WhatsAppTemplates.js';
 import Affiliates  from './pages/phase2/Affiliates.js';
 import Attribution from './pages/phase2/Attribution.js';
 import Retention   from './pages/phase2/Retention.js';
@@ -53,8 +55,21 @@ import './design/tokens.css';
 const qc = new QueryClient({ defaultOptions: { queries: { retry:1, staleTime:30_000 } } });
 
 function Protected({ children }: { children: React.ReactNode }) {
-  const isAuth = useAuthStore(s => s.isAuth);
-  return isAuth ? <>{children}</> : <Navigate to="/login" replace />;
+  const { isAuth, logout } = useAuthStore(s => ({ isAuth: s.isAuth, logout: s.logout }));
+  const [verified, setVerified] = React.useState<boolean | null>(null);
+
+  React.useEffect(() => {
+    if (!isAuth) { setVerified(false); return; }
+    // Verify token is still valid with a quick /auth/me call
+    import('../lib/api').then(({ api }) => {
+      api.get('/auth/me').then(() => setVerified(true)).catch(() => {
+        logout(); setVerified(false);
+      });
+    });
+  }, [isAuth]);
+
+  if (verified === null && isAuth) return null; // loading
+  return (isAuth && verified) ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
 export default function App() {
@@ -78,7 +93,8 @@ export default function App() {
                   <Route path="/risk"        element={<Risk />} />
                   <Route path="/crm"         element={<CRM />} />
                   <Route path="/campaigns"   element={<Campaigns />} />
-                  <Route path="/whatsapp"    element={<WhatsApp />} />
+                  <Route path="/whatsapp"            element={<WhatsApp />} />
+                  <Route path="/whatsapp-templates" element={<WhatsAppTemplates />} />
                   <Route path="/affiliates"  element={<Affiliates />} />
                   <Route path="/marketing"         element={<MarketingDashboard />} />
                   <Route path="/utm-builder"      element={<UTMBuilder />} />

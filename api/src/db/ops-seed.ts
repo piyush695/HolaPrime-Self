@@ -201,7 +201,108 @@ async function seedOps() {
     console.log('✅ Payout Rules: 6 rules seeded');
   }
 
-  console.log('\n🎉 All ops data seeded successfully!');
+
+  // 10. Email Templates (rich sample templates)
+  const emailTemplates = [
+    {
+      key: 'breach_recovery',
+      label: 'Breach Recovery',
+      subject: "Your Hola Prime account update — don't give up, {{first_name}}",
+      html_body: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#0B1120;color:#F1F5F9;border-radius:16px;padding:32px">
+<h1 style="font-size:22px;font-weight:800">Hey {{first_name}}, every great trader has been here.</h1>
+<p style="color:#94A3B8;line-height:1.6">Your account was closed, but that doesn't define your journey. The best funded traders failed dozens of times before they succeeded.</p>
+<div style="background:#1C2A3A;border-radius:12px;padding:20px;margin:24px 0;border-left:4px solid #3F8FE0">
+  <p style="margin:0">Challenge: <strong>{{challenge_name}}</strong><br/>Breach date: <strong>{{breach_date}}</strong></p>
+</div>
+<p style="color:#94A3B8">Ready to come back stronger? Use your exclusive comeback code:</p>
+<div style="text-align:center;margin:24px 0;background:#1C2A3A;border:2px dashed #3F8FE0;border-radius:12px;padding:20px">
+  <span style="font-size:28px;font-weight:900;color:#3F8FE0;letter-spacing:4px">{{promo_code}}</span>
+  <p style="color:#64748B;font-size:12px;margin-top:8px">Valid for 48 hours only</p>
+</div>
+<div style="text-align:center">
+  <a href="{{cta_url}}" style="display:inline-block;background:#3F8FE0;color:#fff;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700">Start New Challenge →</a>
+</div></div>`,
+      variables: ['first_name','challenge_name','breach_date','promo_code','cta_url'],
+    },
+    {
+      key: 'win_back',
+      label: '30-Day Win-back',
+      subject: '{{first_name}}, your funded account is waiting for you 👋',
+      html_body: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;background:#0B1120;color:#F1F5F9;border-radius:16px;padding:32px">
+<h1 style="font-size:22px;font-weight:800">We miss you, {{first_name}}!</h1>
+<p style="color:#94A3B8;line-height:1.6">It has been a while since you last traded with us. Markets are moving and opportunities are waiting.</p>
+<div style="background:#1C2A3A;border-radius:12px;padding:20px;margin:24px 0;text-align:center">
+  <div style="font-size:32px;font-weight:900;color:#F5B326">15% OFF</div>
+  <div style="color:#94A3B8;margin:8px 0">Your next challenge — expires in 48 hours</div>
+  <div style="background:#0B1120;border-radius:8px;padding:10px 20px;display:inline-block;margin-top:8px">
+    <span style="font-size:20px;font-weight:800;color:#60A5FA;letter-spacing:3px">{{promo_code}}</span>
+  </div>
+</div>
+<div style="text-align:center">
+  <a href="{{cta_url}}" style="display:inline-block;background:#38BA82;color:#fff;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700">Claim Your Offer →</a>
+</div></div>`,
+      variables: ['first_name','promo_code','cta_url'],
+    },
+  ];
+
+  for (const tmpl of emailTemplates) {
+    await q(
+      `INSERT INTO email_templates (key, label, subject, html_body, variables)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (key) DO UPDATE SET label=$2, subject=$3, html_body=$4`,
+      [tmpl.key, tmpl.label, tmpl.subject, tmpl.html_body, JSON.stringify(tmpl.variables)]
+    );
+  }
+  console.log('✅ Email Templates: 2 rich sample templates seeded');
+
+  // 11. WhatsApp Templates
+  const waTemplates = [
+    {
+      name: 'Challenge Passed Congratulations',
+      wa_template_name: 'challenge_passed_congrats',
+      language: 'en_US', category: 'UTILITY', status: 'approved',
+      body_text: "Hi {{first_name}}! 🎉 Congratulations — you passed your *{{challenge_name}}* challenge!\n\nComplete KYC to get your funded account:\n{{kyc_url}}",
+      footer_text: 'Reply STOP to unsubscribe',
+      variables: ['first_name','challenge_name','kyc_url'],
+    },
+    {
+      name: 'Payout Sent Notification',
+      wa_template_name: 'payout_sent_notification',
+      language: 'en_US', category: 'UTILITY', status: 'approved',
+      body_text: "Hi {{first_name}}! 💸 Your payout of *{{amount}}* has been sent via {{method}}.\n\nExpected arrival: 1-3 business days. Keep trading! 🚀",
+      footer_text: 'Hola Prime Markets',
+      variables: ['first_name','amount','method'],
+    },
+    {
+      name: 'KYC Reminder',
+      wa_template_name: 'kyc_reminder_funded',
+      language: 'en_US', category: 'UTILITY', status: 'approved',
+      body_text: "Hi {{first_name}} 👋 You passed your challenge but haven't completed KYC yet!\n\nClaim your *{{account_size}}* funded account here:\n{{kyc_url}}\n\nTakes less than 5 minutes.",
+      footer_text: 'Reply HELP for support',
+      variables: ['first_name','account_size','kyc_url'],
+    },
+    {
+      name: 'Win-back Offer',
+      wa_template_name: 'winback_discount_offer',
+      language: 'en_US', category: 'MARKETING', status: 'draft',
+      body_text: "Hey {{first_name}}! 👋 We miss you.\n\nUse *{{promo_code}}* for 15% OFF your next challenge.\n\n⏰ Offer expires in 48 hours:\n{{cta_url}}",
+      footer_text: 'Reply STOP to opt out',
+      variables: ['first_name','promo_code','cta_url'],
+    },
+  ];
+
+  for (const tmpl of waTemplates) {
+    await q(
+      `INSERT INTO whatsapp_templates (name, wa_template_name, language, category, status, body_text, footer_text, variables)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+       ON CONFLICT DO NOTHING`,
+      [tmpl.name, tmpl.wa_template_name, tmpl.language, tmpl.category,
+       tmpl.status, tmpl.body_text, tmpl.footer_text, tmpl.variables]
+    );
+  }
+  console.log('✅ WhatsApp Templates: 4 templates seeded (3 approved, 1 draft)');
+
+    console.log('\n🎉 All ops data seeded successfully!');
   await pool.end();
 }
 
