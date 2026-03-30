@@ -20,8 +20,8 @@ export async function analyticsRoutes(app: FastifyInstance) {
     const { period = '30d' } = req.query as any;
     const days = period === '7d' ? 7 : period === '90d' ? 90 : period === '1y' ? 365 : 30;
     const rows = await query(
-      `SELECT DATE_TRUNC('day', created_at) as date, COUNT(*) as orders, COALESCE(SUM(fee),0) as revenue
-       FROM trading_accounts WHERE created_at > NOW()-INTERVAL '1 day' * ${days}
+      `SELECT DATE_TRUNC('day', p.created_at) as date, COUNT(*) as orders, COALESCE(SUM(p.amount),0) as revenue
+       FROM payments p WHERE p.type='challenge_fee' AND p.status='completed' AND p.created_at > NOW()-INTERVAL '1 day' * ${days}
        GROUP BY 1 ORDER BY 1`,
       []
     );
@@ -34,7 +34,7 @@ export async function analyticsRoutes(app: FastifyInstance) {
       `SELECT p.name as product, COUNT(ca.*) as total,
         COUNT(CASE WHEN ca.status IN ('passed','funded') THEN 1 END) as passed,
         ROUND(COUNT(CASE WHEN ca.status IN ('passed','funded') THEN 1 END)::numeric / NULLIF(COUNT(*),0) * 100, 1) as pass_rate
-       FROM trading_accounts ca LEFT JOIN challenge_products p ON p.id=ca.challenge_product_id
+       FROM trading_accounts ca LEFT JOIN challenge_products p ON p.id=ca.product_id
        GROUP BY p.id, p.name ORDER BY total DESC`
     );
     return reply.send(rows);
