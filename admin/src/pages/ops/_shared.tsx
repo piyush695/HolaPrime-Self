@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 export const A = { bg:'#0F1117',surf:'#161B27',surf2:'#1C2333',bord:'#252D3D',bordL:'#2E3850',blue:'#3F8FE0',blueL:'#60A9F0',blueD:'#1E5FAE',white:'#F5F8FF',txtA:'#D8E0F0',txtB:'#8892B0',txtC:'#4F5669',green:'#38BA82',red:'#FF4C6A',gold:'#F4C430',orange:'#F97316' };
-export const getToken = () => { try { return JSON.parse(localStorage.getItem('hp-admin-auth')!).state?.accessToken; } catch { return null; } };
+export const getToken = () => { try { return JSON.parse(localStorage.getItem('hp-admin-auth-v2')!).state?.accessToken; } catch { return null; } };
 export const api = (p: string, o?: RequestInit) => fetch(p, { ...o, headers: { 'Content-Type':'application/json', ...(getToken() ? { Authorization:`Bearer ${getToken()}` } : {}), ...(o?.headers ?? {}) } }).then(r => r.json());
 export const inp: React.CSSProperties = { width:'100%',background:'rgba(255,255,255,.05)',color:A.white,border:`1px solid ${A.bord}`,borderRadius:8,padding:'10px 14px',fontSize:14,outline:'none',fontFamily:'inherit' };
 export const sel: React.CSSProperties = { width:'100%',background:A.surf2,color:A.white,border:`1px solid ${A.bord}`,borderRadius:8,padding:'10px 14px',fontSize:14,outline:'none',fontFamily:'inherit',cursor:'pointer' };
