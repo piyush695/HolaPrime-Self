@@ -105,17 +105,17 @@ async function seedOps() {
 
   // 4. FAQ Items
   await q(`
-    INSERT INTO faq_items (question, answer, category, sort_order, enabled) VALUES
-      ('What is a prop firm challenge?','A prop firm challenge is an evaluation where you trade a simulated account to prove your skills. Once you pass, you receive a funded account with real capital.','general',1,true),
-      ('How do I start a challenge?','Register for an account, choose your challenge plan, complete payment, and you will receive your login credentials within minutes.','general',2,true),
-      ('What are the profit targets?','Phase 1 requires an 8% profit target. Phase 2 requires a 5% profit target. Once both phases are complete, you receive your funded account.','challenges',3,true),
-      ('What is the daily loss limit?','The daily loss limit is 5% of your account balance. Exceeding this limit will result in account termination.','challenges',4,true),
-      ('What is the maximum total loss?','The maximum total drawdown is 10% from your starting balance at any time.','challenges',5,true),
-      ('How long do I have to complete the challenge?','There is no time limit, but you must trade at least 5 days to qualify for progression.','challenges',6,true),
-      ('How are payouts processed?','Payouts are processed within 24 hours of approval. You can request a payout every 14 days once funded.','payouts',7,true),
-      ('What payment methods are accepted?','We accept bank transfer, cryptocurrency (USDT, BTC, ETH), PayPal, and credit/debit cards.','payments',8,true),
-      ('What instruments can I trade?','You can trade Forex pairs, indices, commodities, and cryptocurrencies depending on your platform.','trading',9,true),
-      ('Is there a minimum trading day requirement?','Yes, you must trade a minimum of 5 days across all phases of the challenge.','challenges',10,true)
+    INSERT INTO faq_items (page, question, answer, sort_order, enabled) VALUES
+      ('general','What is a prop firm challenge?','A prop firm challenge is an evaluation where you trade a simulated account to prove your skills. Once you pass, you receive a funded account with real capital.',1,true),
+      ('general','How do I start a challenge?','Register for an account, choose your challenge plan, complete payment, and you will receive your login credentials within minutes.',2,true),
+      ('general','What are the profit targets?','Phase 1 requires an 8% profit target. Phase 2 requires a 5% profit target. Once both phases are complete, you receive your funded account.',3,true),
+      ('general','What is the daily loss limit?','The daily loss limit is 5% of your account balance. Exceeding this limit will result in account termination.',4,true),
+      ('general','What is the maximum total loss?','The maximum total drawdown is 10% from your starting balance at any time.',5,true),
+      ('general','How long do I have to complete the challenge?','There is no time limit, but you must trade at least 5 days to qualify for progression.',6,true),
+      ('payout','How are payouts processed?','Payouts are processed within 24 hours of approval. You can request a payout every 14 days once funded.',7,true),
+      ('general','What payment methods are accepted?','We accept bank transfer, cryptocurrency (USDT, BTC, ETH), PayPal, and credit/debit cards.',8,true),
+      ('forex','What instruments can I trade?','You can trade Forex pairs, indices, commodities, and cryptocurrencies depending on your platform.',9,true),
+      ('general','Is there a minimum trading day requirement?','Yes, you must trade a minimum of 5 days across all phases of the challenge.',10,true)
     ON CONFLICT DO NOTHING
   `);
   console.log('✅ FAQs: 10 questions seeded');
