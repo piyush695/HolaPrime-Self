@@ -55,21 +55,8 @@ import './design/tokens.css';
 const qc = new QueryClient({ defaultOptions: { queries: { retry:1, staleTime:30_000 } } });
 
 function Protected({ children }: { children: React.ReactNode }) {
-  const { isAuth, logout } = useAuthStore(s => ({ isAuth: s.isAuth, logout: s.logout }));
-  const [verified, setVerified] = React.useState<boolean | null>(null);
-
-  React.useEffect(() => {
-    if (!isAuth) { setVerified(false); return; }
-    // Verify token is still valid with a quick /auth/me call
-    import('../lib/api').then(({ api }) => {
-      api.get('/auth/me').then(() => setVerified(true)).catch(() => {
-        logout(); setVerified(false);
-      });
-    });
-  }, [isAuth]);
-
-  if (verified === null && isAuth) return null; // loading
-  return (isAuth && verified) ? <>{children}</> : <Navigate to="/login" replace />;
+  const isAuth = useAuthStore(s => s.isAuth);
+  return isAuth ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
 export default function App() {
