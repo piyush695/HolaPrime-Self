@@ -136,6 +136,10 @@ async function bootstrap(): Promise<void> {
   await app.register(payoutsRoutes,      { prefix: '/api/v1/payouts'      });
   await app.register(tradingSyncRoutes,  { prefix: '/api/v1/trading-sync' });
   await app.register(pixelsRoutes,       { prefix: '/api/v1/pixels'       });
+  await app.register(marketingRoutes,    { prefix: '/api/v1/marketing'    });
+  await app.register(utmRoutes,          { prefix: '/api/v1/utm'          });
+  await app.register(otpRoutes,          { prefix: '/api/v1/otp'          });
+  await app.register(integrationsHubRoutes, { prefix: '/api/v1/integrations-hub' });
 
   // ── Health ─────────────────────────────────────────────────────────────────
   app.get('/health', async () => ({
