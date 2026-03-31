@@ -123,6 +123,7 @@ export default function App() {
                   <Route path="/ops/analytics"        element={<AnalyticsDashboard />} />
                   <Route path="/ops/ip-blocklist"     element={<IPBlocklist />} />
                   <Route path="/ops/integrations"     element={<IntegrationsHub />} />
+                  <Route path="/ai-insights"          element={<AIInsights />} />
 
                 </Routes>
               </Layout>
