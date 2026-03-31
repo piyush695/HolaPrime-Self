@@ -40,7 +40,7 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
       email:     z.string().email(),
       firstName: z.string().min(1),
       lastName:  z.string().min(1),
-      role:      z.enum(['admin','compliance','support','finance','risk']),
+      role:      z.enum(['superadmin','admin','compliance','support','finance','risk']),
       password:  z.string().min(8),
     }).parse(req.body);
     const id = await createAdminUser(body, (req as any).admin.id);
