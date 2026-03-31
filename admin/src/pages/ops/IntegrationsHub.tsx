@@ -37,6 +37,7 @@ export default function IntegrationsHub() {
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ok:boolean;message:string;latency_ms?:number}|null>(null);
   const [saved, setSaved] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [group, setGroup] = useState('payments');
 
   useEffect(() => {
@@ -50,18 +51,26 @@ export default function IntegrationsHub() {
     setIsActive(integ?.is_active ?? false);
     setEditCreds(integ?.credentials ?? {});
     setTestResult(integ?.test_result ?? null);
-    setSaved(false);
+    // If creds already saved, show saved view; otherwise go straight to edit
+    const hasCreds = integ?.credentials && Object.keys(integ.credentials).length > 0;
+    setSaved(!!hasCreds);
+    setIsEditing(!hasCreds);
   }
 
   async function save() {
     if (!selected) return;
     setSaving(true);
-    await api(`/api/v1/integrations-hub/${selected}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ credentials: editCreds, is_active: isActive }),
-    });
-    setIntegrations(ints => ints.map(i => i.service===selected ? {...i,credentials:editCreds,is_active:isActive} : i));
-    setSaved(true); setTimeout(()=>setSaved(false),2500);
+    try {
+      await api(`/api/v1/integrations-hub/${selected}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ credentials: editCreds, is_active: isActive }),
+      });
+      setIntegrations(ints => ints.map(i => i.service===selected ? {...i,credentials:editCreds,is_active:isActive} : i));
+      setSaved(true);
+      setIsEditing(false);
+    } catch(e: any) {
+      alert('Save failed: ' + (e.message ?? 'Unknown error'));
+    }
     setSaving(false);
   }
 
@@ -166,13 +175,21 @@ export default function IntegrationsHub() {
                 </div>
               </div>
               <div style={{ display:'flex',gap:8,alignItems:'center' }}>
-                {saved && <span style={{ fontSize:12,color:A.green }}>✓ Saved</span>}
                 <Btn onClick={testConn} disabled={testing||saving} variant="ghost" style={{ padding:'7px 16px',fontSize:12 }}>
                   {testing?'Testing…':'🔌 Test Connection'}
                 </Btn>
-                <Btn onClick={save} disabled={saving} style={{ padding:'7px 16px',fontSize:12 }}>
-                  {saving?'Saving…':'Save Credentials'}
-                </Btn>
+                {isEditing ? (
+                  <div style={{ display:'flex',gap:8 }}>
+                    {saved && <Btn onClick={()=>setIsEditing(false)} variant="ghost" style={{ padding:'7px 16px',fontSize:12 }}>Cancel</Btn>}
+                    <Btn onClick={save} disabled={saving} style={{ padding:'7px 16px',fontSize:12 }}>
+                      {saving?'Saving…':'Save Credentials'}
+                    </Btn>
+                  </div>
+                ) : (
+                  <Btn onClick={()=>setIsEditing(true)} variant="ghost" style={{ padding:'7px 16px',fontSize:12 }}>
+                    ✏️ Edit Credentials
+                  </Btn>
+                )}
               </div>
             </div>
 
@@ -199,26 +216,85 @@ export default function IntegrationsHub() {
               </div>
             </div>
 
+            {/* Saved banner */}
+            {saved && !isEditing && (
+              <div style={{ padding:'14px 16px',background:'rgba(56,186,130,.08)',border:'1px solid rgba(56,186,130,.25)',borderRadius:10,marginBottom:16,display:'flex',justifyContent:'space-between',alignItems:'center' }}>
+                <div style={{ display:'flex',alignItems:'center',gap:10 }}>
+                  <span style={{ fontSize:18 }}>✅</span>
+                  <div>
+                    <div style={{ fontSize:13,fontWeight:700,color:A.green }}>Credentials saved</div>
+                    <div style={{ fontSize:11,color:A.txtB,marginTop:2 }}>
+                      {selectedInteg?.last_tested ? `Last tested ${new Date(selectedInteg.last_tested).toLocaleString()}` : 'Click Test Connection to verify'}
+                    </div>
+                  </div>
+                </div>
+                <Btn onClick={()=>setIsEditing(true)} variant="ghost" style={{ padding:'6px 14px',fontSize:12 }}>
+                  ✏️ Edit Credentials
+                </Btn>
+              </div>
+            )}
+
             {/* Credential fields */}
             <div style={{ display:'flex',flexDirection:'column',gap:14 }}>
               {selectedSchema.length === 0 ? (
                 <div style={{ textAlign:'center',padding:32,color:A.txtC }}>No schema defined for this integration</div>
-              ) : (
+              ) : isEditing ? (
+                // Edit mode — show full form
                 selectedSchema.map((field: any) => (
                   <div key={field.key}>
                     <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6 }}>
                       <label style={{ fontSize:12,color:A.txtB,fontWeight:500 }}>
                         {field.label}{field.required&&<span style={{ color:A.red,marginLeft:3 }}>*</span>}
                       </label>
-                      {field.hint && <span style={{ fontSize:10,color:A.txtD,maxWidth:200,textAlign:'right' }}>{field.hint}</span>}
+                      {field.hint && <span style={{ fontSize:10,color:A.txtC,maxWidth:200,textAlign:'right' }}>{field.hint}</span>}
                     </div>
                     {field.type === 'select' ? (
-                      <select value={editCreds[field.key]??''} onChange={e=>setEditCreds(c=>({...c,[field.key]:e.target.value}))} style={sel}>
+                      <select value={editCreds[field.key]??''} onChange={e=>setEditCreds((cc: any)=>({...cc,[field.key]:e.target.value}))} style={sel}>
                         {field.options?.map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
                       </select>
                     ) : (
                       <input type={field.type==='password'?'password':field.type==='url'?'url':'text'}
-                        value={editCreds[field.key]??''} onChange={e=>setEditCreds(c=>({...c,[field.key]:e.target.value}))}
+                        value={editCreds[field.key]??''} onChange={e=>setEditCreds((cc: any)=>({...cc,[field.key]:e.target.value}))}
+                        placeholder={field.placeholder ?? (editCreds[field.key] ? '••••••••' : '')}
+                        style={inp} autoComplete="off" spellCheck={false}
+                        onFocus={e=>e.currentTarget.style.borderColor=A.blue} onBlur={e=>e.currentTarget.style.borderColor=A.bord}/>
+                    )}
+                  </div>
+                ))
+              ) : saved ? (
+                // Saved view — show masked summary
+                <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
+                  {selectedSchema.map((field: any) => {
+                    const val = editCreds[field.key];
+                    const isSecret = field.type === 'password';
+                    const displayVal = !val ? <span style={{ color:A.txtC }}>Not set</span>
+                      : isSecret ? <span style={{ color:A.txtB,letterSpacing:3 }}>{'•'.repeat(Math.min(16, val.length))}</span>
+                      : <span style={{ color:A.white }}>{val.length > 40 ? val.slice(0,20)+'…'+val.slice(-8) : val}</span>;
+                    return (
+                      <div key={field.key} style={{ display:'flex',justifyContent:'space-between',padding:'10px 14px',background:A.surf2,borderRadius:8,alignItems:'center' }}>
+                        <span style={{ fontSize:12,color:A.txtB,fontWeight:600 }}>{field.label}</span>
+                        <span style={{ fontSize:12,fontFamily:'monospace' }}>{displayVal}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                // No creds yet — show empty form
+                selectedSchema.map((field: any) => (
+                  <div key={field.key}>
+                    <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6 }}>
+                      <label style={{ fontSize:12,color:A.txtB,fontWeight:500 }}>
+                        {field.label}{field.required&&<span style={{ color:A.red,marginLeft:3 }}>*</span>}
+                      </label>
+                      {field.hint && <span style={{ fontSize:10,color:A.txtC,maxWidth:200,textAlign:'right' }}>{field.hint}</span>}
+                    </div>
+                    {field.type === 'select' ? (
+                      <select value={editCreds[field.key]??''} onChange={e=>setEditCreds((cc: any)=>({...cc,[field.key]:e.target.value}))} style={sel}>
+                        {field.options?.map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
+                      </select>
+                    ) : (
+                      <input type={field.type==='password'?'password':field.type==='url'?'url':'text'}
+                        value={editCreds[field.key]??''} onChange={e=>setEditCreds((cc: any)=>({...cc,[field.key]:e.target.value}))}
                         placeholder={field.placeholder} style={inp} autoComplete="off" spellCheck={false}
                         onFocus={e=>e.currentTarget.style.borderColor=A.blue} onBlur={e=>e.currentTarget.style.borderColor=A.bord}/>
                     )}
@@ -227,14 +303,23 @@ export default function IntegrationsHub() {
               )}
             </div>
 
-            {/* Footer save button */}
+            {/* Footer actions */}
             <div style={{ marginTop:24,paddingTop:16,borderTop:`1px solid ${A.bord}`,display:'flex',gap:10,justifyContent:'flex-end' }}>
               <Btn onClick={testConn} disabled={testing||saving} variant="ghost" style={{ padding:'10px 20px' }}>
                 {testing?'Testing…':'🔌 Test Connection'}
               </Btn>
-              <Btn onClick={save} disabled={saving} style={{ padding:'10px 20px' }}>
-                {saving?'Saving…':'Save Credentials'}
-              </Btn>
+              {isEditing ? (
+                <>
+                  {saved && <Btn onClick={()=>setIsEditing(false)} variant="ghost" style={{ padding:'10px 20px' }}>Cancel</Btn>}
+                  <Btn onClick={save} disabled={saving} style={{ padding:'10px 20px' }}>
+                    {saving?'Saving…':'Save Credentials'}
+                  </Btn>
+                </>
+              ) : (
+                <Btn onClick={()=>setIsEditing(true)} variant="ghost" style={{ padding:'10px 20px' }}>
+                  ✏️ Edit Credentials
+                </Btn>
+              )}
             </div>
           </Card>
         ) : (
