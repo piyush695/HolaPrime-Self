@@ -13,6 +13,7 @@ const NAV = [
   { to:'/risk',         icon:'🛡️', label:'Risk' },
   null,
   { to:'/marketing',    icon:'📈', label:'Marketing Intel' },
+  { to:'/ai-insights',  icon:'✦', label:'AI Intelligence' },
   { to:'/utm-builder',  icon:'🔗', label:'UTM Builder' },
   { to:'/crm',          icon:'🎯', label:'CRM' },
   { to:'/campaigns',    icon:'📧', label:'Campaigns' },

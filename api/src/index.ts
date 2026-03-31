@@ -22,6 +22,7 @@ import { affiliateRoutes }     from './modules/affiliates/affiliates.routes.js';
 import { whatsappRoutes }      from './modules/whatsapp/whatsapp.routes.js';
 import { campaignRoutes }      from './modules/campaigns/campaigns.routes.js';
 import { audiencesRoutes }     from './modules/campaigns/audiences.routes.js';
+import { aiInsightsRoutes }    from './modules/ai/ai-insights.routes.js';
 import { retentionRoutes }     from './modules/retention/retention.routes.js';
 // Phase 3
 import { settingsRoutes }      from './modules/settings/settings.routes.js';
@@ -139,6 +140,7 @@ async function bootstrap(): Promise<void> {
   await app.register(pixelsRoutes,       { prefix: '/api/v1/pixels'       });
   await app.register(marketingRoutes,    { prefix: '/api/v1/marketing'    });
   await app.register(audiencesRoutes,    { prefix: '/api/v1/audiences'    });
+  await app.register(aiInsightsRoutes,   { prefix: '/api/v1/ai'           });
   await app.register(utmRoutes,          { prefix: '/api/v1/utm'          });
   await app.register(otpRoutes,          { prefix: '/api/v1/otp'          });
   await app.register(integrationsHubRoutes, { prefix: '/api/v1/integrations-hub' });

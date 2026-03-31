@@ -49,6 +49,7 @@ import BlogCMS             from './pages/ops/BlogCMS.js';
 import SupportTickets      from './pages/ops/SupportTickets.js';
 import AnalyticsDashboard  from './pages/ops/AnalyticsDashboard.js';
 import MarketingDashboard from './pages/phase2/MarketingDashboard.js';
+import AIInsights from './pages/phase2/AIInsights.js';
 import UTMBuilder          from './pages/phase2/UTMBuilder.js';
 import IPBlocklist         from './pages/ops/IPBlocklist.js';
 import IntegrationsHub     from './pages/ops/IntegrationsHub.js';
