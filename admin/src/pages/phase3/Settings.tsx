@@ -68,11 +68,26 @@ function AdminInviteModal({ onClose }: { onClose: () => void }) {
       if (form.sendEmail) {
         setSendingInvite(true);
         try {
-          await api.post('/settings/admins/invite', {
+          const inviteRes = await api.post('/settings/admins/invite', {
             email: form.email, firstName: form.firstName,
             role: form.role, tempPassword: generatedPassword,
           });
-        } catch { /* email failure shouldn't block admin creation */ }
+          // Check if server returned an error (email failed)
+          if (inviteRes.data?.ok === false) {
+            setError(`Admin created but invite email failed: ${inviteRes.data.error}. Share credentials manually.`);
+            setSendingInvite(false);
+            qc.invalidateQueries({ queryKey:['admins'] });
+            setStep('success'); // still show success - admin was created
+            return;
+          }
+        } catch(emailErr: any) {
+          const msg = emailErr?.response?.data?.error ?? emailErr?.response?.data?.hint ?? emailErr.message ?? 'Unknown error';
+          setError(`Admin created but invite email failed: ${msg}. Share credentials manually below.`);
+          setSendingInvite(false);
+          qc.invalidateQueries({ queryKey:['admins'] });
+          setStep('success');
+          return;
+        }
         setSendingInvite(false);
       }
       qc.invalidateQueries({ queryKey:['admins'] });
@@ -173,25 +188,38 @@ function AdminInviteModal({ onClose }: { onClose: () => void }) {
             </div>
           </div>
         ) : (
-          <div style={{ padding:32, textAlign:'center' }}>
-            <div style={{ fontSize:48, marginBottom:16 }}>✅</div>
-            <div style={{ fontSize:18, fontWeight:800, color:'#F5F8FF', marginBottom:8 }}>
-              {form.firstName} has been invited!
+          <div style={{ padding:32 }}>
+            <div style={{ textAlign:'center', marginBottom:20 }}>
+              <div style={{ fontSize:48, marginBottom:12 }}>{error ? '⚠️' : '✅'}</div>
+              <div style={{ fontSize:18, fontWeight:800, color:'#F5F8FF', marginBottom:8 }}>
+                {form.firstName} has been added!
+              </div>
             </div>
-            <div style={{ fontSize:14, color:'#8892B0', marginBottom:24, lineHeight:1.6 }}>
-              {form.sendEmail
-                ? `An invite email has been sent to ${form.email} with their temporary password.`
-                : `Account created. Share these credentials manually:`}
-            </div>
-            {!form.sendEmail && (
-              <div style={{ background:'#1C2A3A', borderRadius:10, padding:16, marginBottom:24, textAlign:'left' }}>
-                <div style={{ fontSize:12, color:'#64748B', marginBottom:4 }}>Email</div>
-                <code style={{ color:'#60A9F0' }}>{form.email}</code>
-                <div style={{ fontSize:12, color:'#64748B', marginTop:12, marginBottom:4 }}>Temp Password</div>
-                <code style={{ color:'#F5B326', fontSize:16, letterSpacing:'2px' }}>{generatedPassword}</code>
+            {error && (
+              <div style={{ padding:'12px 16px', background:'rgba(245,179,38,.1)', border:'1px solid rgba(245,179,38,.3)', borderRadius:8, fontSize:13, color:'#F5B326', marginBottom:16, lineHeight:1.6 }}>
+                ⚠️ {error}
               </div>
             )}
-            <Btn onClick={onClose}>Done</Btn>
+            <div style={{ background:'#1C2A3A', borderRadius:10, padding:16, marginBottom:20 }}>
+              <div style={{ fontSize:11, color:'#64748B', fontWeight:700, marginBottom:12, textTransform:'uppercase', letterSpacing:'.05em' }}>Login Credentials</div>
+              <div style={{ marginBottom:10 }}>
+                <div style={{ fontSize:11, color:'#64748B', marginBottom:3 }}>Email</div>
+                <code style={{ color:'#60A9F0', fontSize:13 }}>{form.email}</code>
+              </div>
+              <div>
+                <div style={{ fontSize:11, color:'#64748B', marginBottom:3 }}>Temporary Password</div>
+                <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                  <code style={{ color:'#F5B326', fontSize:16, letterSpacing:'2px' }}>{generatedPassword}</code>
+                  <button onClick={() => navigator.clipboard.writeText(generatedPassword)} style={{ padding:'3px 8px', borderRadius:5, border:'1px solid #353947', background:'#252931', color:'#8892B0', fontSize:11, cursor:'pointer' }}>Copy</button>
+                </div>
+              </div>
+            </div>
+            {!error && form.sendEmail && (
+              <div style={{ fontSize:13, color:'#64748B', marginBottom:20, textAlign:'center' }}>
+                An invite email has been sent to <strong style={{ color:'#F5F8FF' }}>{form.email}</strong>
+              </div>
+            )}
+            <div style={{ textAlign:'center' }}><Btn onClick={onClose}>Done</Btn></div>
           </div>
         )}
       </div>

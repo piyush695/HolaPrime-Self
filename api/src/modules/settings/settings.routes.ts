@@ -178,7 +178,16 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
     const { sendAdminInviteEmail } = await import('./email.dispatcher.js');
     const loginUrl = process.env.ADMIN_URL ?? 'https://holaprime-admin-panel-688552756595.asia-south1.run.app/login';
     const pass = tempPassword ?? Math.random().toString(36).slice(2, 10).toUpperCase();
-    await sendAdminInviteEmail(email, firstName, `${admin.first_name} ${admin.last_name}`, role, loginUrl, pass);
-    return reply.status(201).send({ ok: true, message: `Invite sent to ${email}` });
+    try {
+      await sendAdminInviteEmail(email, firstName, `${admin.first_name} ${admin.last_name}`, role, loginUrl, pass);
+      return reply.status(201).send({ ok: true, message: `Invite sent to ${email}` });
+    } catch(err: any) {
+      // Return the real error so the frontend can show it
+      return reply.status(500).send({
+        ok: false,
+        error: err.message ?? 'Failed to send invite email',
+        hint: 'Check that SendGrid is configured in Integrations Hub → Email → SendGrid with a valid API key and is_active=true',
+      });
+    }
   });
 }

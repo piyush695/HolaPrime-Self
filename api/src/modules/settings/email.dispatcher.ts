@@ -107,7 +107,7 @@ async function getProviderConfig(): Promise<EmailProviderConfig> {
 
   // SendGrid — from integration_credentials table or env
   const sgCred = await queryOne<{ credentials: any }>(
-    `SELECT credentials FROM integration_credentials WHERE service_key = 'sendgrid' AND is_active = true LIMIT 1`
+    `SELECT credentials FROM integration_credentials WHERE service = 'sendgrid' AND is_active = true LIMIT 1`
   );
   const sgApiKey = sgCred?.credentials?.api_key ?? process.env.SENDGRID_API_KEY;
   if (sgApiKey) {
@@ -120,7 +120,7 @@ async function getProviderConfig(): Promise<EmailProviderConfig> {
 
   // Mailmodo — from integration_credentials table or env
   const mmCred = await queryOne<{ credentials: any }>(
-    `SELECT credentials FROM integration_credentials WHERE service_key = 'mailmodo' AND is_active = true LIMIT 1`
+    `SELECT credentials FROM integration_credentials WHERE service = 'mailmodo' AND is_active = true LIMIT 1`
   );
   const mmApiKey = mmCred?.credentials?.api_key ?? process.env.MAILMODO_API_KEY;
   if (mmApiKey) {
@@ -169,15 +169,19 @@ export async function dispatchEmail(params: DispatchEmailParams): Promise<void> 
     case 'sendgrid': {
       if (!config.sendgrid) {
         // Fall through to SMTP
-        console.warn('[email] SendGrid not configured, falling back to SMTP');
-        await sendEmail({
-          to:      params.to as string,
-          subject: params.subject,
-          html:    params.html,
-          text:    params.text,
-          from:    params.fromEmail,
-          replyTo: params.replyTo,
-        });
+        console.warn('[email] SendGrid not configured — no api_key found in integration_credentials or SENDGRID_API_KEY env. Falling back to SMTP.');
+        try {
+          await sendEmail({
+            to:      params.to as string,
+            subject: params.subject,
+            html:    params.html,
+            text:    params.text,
+            from:    params.fromEmail,
+            replyTo: params.replyTo,
+          });
+        } catch(smtpErr) {
+          throw new Error('SendGrid not configured and SMTP fallback also failed. Please add SendGrid API key in Integrations Hub → Email → SendGrid.');
+        }
         return;
       }
       const toArray = Array.isArray(params.to) ? params.to : [params.to];
