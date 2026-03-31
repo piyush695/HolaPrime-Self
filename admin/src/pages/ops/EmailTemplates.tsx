@@ -19,7 +19,7 @@ const STARTER_TEMPLATES = [
     </div>
   </div>
   <div style="padding:16px 32px;border-top:1px solid #1E2535;text-align:center">
-    <p style="color:#475569;font-size:12px;margin:0">Hola Prime Markets Ltd · <a href="{{support_url}}" style="color:#3F8FE0">Support</a></p>
+    <p style="color:#475569;font-size:12px;margin:0">Hola Prime · <a href="{{support_url}}" style="color:#3F8FE0">Support</a></p>
   </div>
 </div>` },
   { id:'otp', label:'OTP / Code', html:`<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;background:#0B1120;color:#F1F5F9;border-radius:16px;padding:40px;text-align:center">

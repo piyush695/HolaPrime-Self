@@ -89,7 +89,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <div style={{ flex:1, overflowY:'auto' }}>
         {/* Top bar */}
         <div style={{ padding:'0 24px', height:52, background:hp.surfA, borderBottom:`1px solid ${hp.bordA}`, display:'flex', alignItems:'center', justifyContent:'space-between', position:'sticky', top:0, zIndex:10 }}>
-          <div style={{ fontSize:13, color:hp.txtB }}>Hola Prime Markets</div>
+          <div style={{ fontSize:13, color:hp.txtB }}>Hola Prime</div>
           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
             {unreadCount > 0 && (
               <NavLink to="/support" style={{ textDecoration:'none' }}>

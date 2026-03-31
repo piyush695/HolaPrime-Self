@@ -18,7 +18,7 @@ const STARTER_HTML = {
       {{cta_text}}
     </a>
   </div>
-  <p style="color:#9CA3AF;font-size:12px">Hola Prime Markets · <a href="#">Unsubscribe</a></p>
+  <p style="color:#9CA3AF;font-size:12px">Hola Prime · <a href="#">Unsubscribe</a></p>
 </div>`,
   dark: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0B1120;color:#F1F5F9;border-radius:16px;overflow:hidden">
   <div style="background:linear-gradient(135deg,#1B3A6B,#0B1120);padding:32px;text-align:center">
@@ -34,7 +34,7 @@ const STARTER_HTML = {
     </div>
   </div>
   <div style="padding:16px 32px;border-top:1px solid #1E2535;text-align:center">
-    <p style="color:#475569;font-size:12px;margin:0">Hola Prime Markets · <a href="#" style="color:#3F8FE0">Unsubscribe</a></p>
+    <p style="color:#475569;font-size:12px;margin:0">Hola Prime · <a href="#" style="color:#3F8FE0">Unsubscribe</a></p>
   </div>
 </div>`,
   otp: `<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;background:#0B1120;color:#F1F5F9;border-radius:16px;padding:40px;text-align:center">
