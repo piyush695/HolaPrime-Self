@@ -59,13 +59,25 @@ export default function EmailTemplates() {
     setEditing(false); setSaved(true); setTimeout(()=>setSaved(false),2500);
   }
 
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
+
   async function create() {
-    if (!createForm.key||!createForm.label||!createForm.subject||!createForm.html_body)
-      { alert('Key, label, subject and HTML body are required'); return; }
-    const vars = createForm.variables.split(',').map((v:string)=>v.trim()).filter(Boolean);
-    const created = await api('/api/v1/email-templates',{method:'POST',body:JSON.stringify({...createForm,variables:vars})});
-    setTemplates((ts:any[]) => [...ts, created]);
-    select(created); setShowCreate(false); setCreateForm(EMPTY);
+    setCreateError('');
+    if (!createForm.key) { setCreateError('Template key is required (e.g. challenge_passed)'); return; }
+    if (!createForm.label) { setCreateError('Display label is required'); return; }
+    if (!createForm.subject) { setCreateError('Email subject is required'); return; }
+    if (!createForm.html_body) { setCreateError('HTML body is required — pick a starter template or write your own'); return; }
+    setCreating(true);
+    try {
+      const vars = createForm.variables.split(',').map((v:string)=>v.trim()).filter(Boolean);
+      const created = await api('/api/v1/email-templates',{method:'POST',body:JSON.stringify({...createForm,variables:vars})});
+      setTemplates((ts:any[]) => [...ts, created]);
+      select(created); setShowCreate(false); setCreateForm(EMPTY); setCreateError('');
+    } catch(e:any) {
+      setCreateError(e.message ?? 'Failed to create template — check all fields and try again');
+    }
+    setCreating(false);
   }
 
   async function del(key: string) {
@@ -180,8 +192,17 @@ export default function EmailTemplates() {
                 onFocus={e=>e.currentTarget.style.borderColor=A.blue} onBlur={e=>e.currentTarget.style.borderColor=A.bord}/>
             </div>
             <div style={{display:'flex',gap:10}}>
-              <Btn onClick={create} style={{padding:'8px 20px'}}>Create Template</Btn>
-              <Btn onClick={()=>{setShowCreate(false);setCreateForm(EMPTY)}} variant="ghost" style={{padding:'8px 16px'}}>Cancel</Btn>
+              {createError && (
+                <div style={{padding:'10px 14px',background:'rgba(255,76,106,.1)',border:'1px solid rgba(255,76,106,.3)',borderRadius:8,fontSize:13,color:'#FF4C6A',marginBottom:12}}>
+                  ❌ {createError}
+                </div>
+              )}
+              <div style={{display:'flex',gap:10}}>
+                <Btn onClick={create} disabled={creating} style={{padding:'8px 20px'}}>
+                  {creating ? '⏳ Creating…' : 'Create Template'}
+                </Btn>
+                <Btn onClick={()=>{setShowCreate(false);setCreateForm(EMPTY);setCreateError('')}} variant="ghost" style={{padding:'8px 16px'}}>Cancel</Btn>
+              </div>
             </div>
           </Card>
         )}

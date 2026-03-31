@@ -142,6 +142,7 @@ export default function WhatsAppTemplates() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [createError, setCreateError] = useState('');
 
   const [form, setForm] = useState<any>({
     name: '', wa_template_name: '', language: 'en_US', category: 'MARKETING' as Category,
@@ -171,9 +172,10 @@ export default function WhatsAppTemplates() {
   }
 
   async function create() {
-    if (!form.name || !form.wa_template_name || !form.body_text) {
-      alert('Name, template name (snake_case), and body text are required'); return;
-    }
+    setCreateError('');
+    if (!form.name) { setCreateError('Display name is required'); return; }
+    if (!form.wa_template_name) { setCreateError('Meta template name (snake_case) is required'); return; }
+    if (!form.body_text) { setCreateError('Body text is required'); return; }
     setSaving(true);
     try {
       const created = await api('/api/v1/whatsapp/templates', {
@@ -181,9 +183,11 @@ export default function WhatsAppTemplates() {
         body: JSON.stringify({ ...form, variables: extractVars(form.body_text) }),
       });
       setTemplates((ts: any[]) => [...ts, created]);
-      select(created); setShowCreate(false);
+      select(created); setShowCreate(false); setCreateError('');
       setForm({ name:'', wa_template_name:'', language:'en_US', category:'MARKETING', header_type:'', header_content:'', body_text:'', footer_text:'', buttons:[] });
-    } catch { alert('Failed to create template'); }
+    } catch(e: any) {
+      setCreateError(e.message ?? 'Failed to create template');
+    }
     setSaving(false);
   }
 
@@ -359,11 +363,16 @@ export default function WhatsAppTemplates() {
                 <ButtonEditor buttons={form.buttons} onChange={v => setF('buttons', v)} />
               </div>
 
+              {createError && (
+                <div style={{ padding:'10px 14px',background:'rgba(255,76,106,.1)',border:'1px solid rgba(255,76,106,.3)',borderRadius:8,fontSize:13,color:'#FF4C6A',marginBottom:12 }}>
+                  ❌ {createError}
+                </div>
+              )}
               <div style={{ display: 'flex', gap: 10 }}>
                 <Btn onClick={create} disabled={saving} style={{ padding: '8px 20px' }}>
                   {saving ? 'Creating…' : 'Create Template'}
                 </Btn>
-                <Btn onClick={() => setShowCreate(false)} variant="ghost" style={{ padding: '8px 16px' }}>Cancel</Btn>
+                <Btn onClick={() => { setShowCreate(false); setCreateError(''); }} variant="ghost" style={{ padding: '8px 16px' }}>Cancel</Btn>
               </div>
 
               <div style={{ marginTop: 16, padding: '10px 14px', background: A.surf2, borderRadius: 8, fontSize: 12, color: A.txtC }}>
