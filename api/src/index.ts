@@ -21,6 +21,7 @@ import { attributionRoutes }   from './modules/attribution/attribution.routes.js
 import { affiliateRoutes }     from './modules/affiliates/affiliates.routes.js';
 import { whatsappRoutes }      from './modules/whatsapp/whatsapp.routes.js';
 import { campaignRoutes }      from './modules/campaigns/campaigns.routes.js';
+import { audiencesRoutes }     from './modules/campaigns/audiences.routes.js';
 import { retentionRoutes }     from './modules/retention/retention.routes.js';
 // Phase 3
 import { settingsRoutes }      from './modules/settings/settings.routes.js';
