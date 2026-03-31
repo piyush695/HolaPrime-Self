@@ -253,6 +253,39 @@ async function seedOps() {
       [tmpl.key, tmpl.label, tmpl.subject, tmpl.html_body, JSON.stringify(tmpl.variables)]
     );
   }
+  // Also seed 3 quick campaign-ready templates
+  const campaignTemplates = [
+    {
+      key: 'challenge_passed_congrats',
+      label: 'Challenge Passed — Congratulations',
+      subject: 'You passed! Your {{challenge_name}} funded account is ready 🎉',
+      html_body: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0B1120;color:#F1F5F9;border-radius:16px;overflow:hidden"><div style="background:linear-gradient(135deg,#0D3B26,#0B1120);padding:40px 32px;text-align:center"><div style="font-size:48px;margin-bottom:12px">🎉</div><h1 style="font-size:28px;font-weight:900;margin:0;color:#38BA82">You Passed!</h1></div><div style="padding:32px"><p style="font-size:16px;color:#F1F5F9">Hi <strong>{{first_name}}</strong>,</p><p style="color:#94A3B8;line-height:1.7">Congratulations on passing your <strong style="color:#F5B326">{{challenge_name}}</strong> challenge! You have proven your trading discipline and you are now eligible for a funded account.</p><div style="background:#1C2A3A;border-radius:12px;padding:20px;margin:24px 0;text-align:center"><div style="font-size:32px;font-weight:900;color:#38BA82">{{account_size}}</div><div style="color:#64748B;font-size:13px;margin-top:4px">Funded Account Size</div></div><p style="color:#94A3B8;line-height:1.6">Complete your KYC verification to receive your funded account and start trading with real capital.</p><div style="text-align:center;margin:28px 0"><a href="{{kyc_url}}" style="display:inline-block;background:#38BA82;color:#fff;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:15px">Complete KYC Now →</a></div></div><div style="padding:16px 32px;border-top:1px solid #1E2535;text-align:center"><p style="color:#475569;font-size:12px;margin:0">Hola Prime Markets Ltd · <a href="{{support_url}}" style="color:#3F8FE0">Support</a></p></div></div>`,
+      variables: ['first_name','challenge_name','account_size','kyc_url','support_url'],
+    },
+    {
+      key: 'new_trader_welcome',
+      label: 'New Trader Welcome',
+      subject: 'Welcome to Hola Prime, {{first_name}}! Here is how to get started',
+      html_body: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0B1120;color:#F1F5F9;border-radius:16px;overflow:hidden"><div style="background:linear-gradient(135deg,#1B3A6B,#0B1120);padding:32px;text-align:center"><div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:2px">HOLA PRIME</div><p style="color:#94A3B8;margin:8px 0 0;font-size:14px">The smarter way to get funded</p></div><div style="padding:32px"><h1 style="font-size:22px;font-weight:800;margin:0 0 8px">Welcome, {{first_name}}! 👋</h1><p style="color:#94A3B8;line-height:1.7">You have joined <strong style="color:#F1F5F9">20,000+ funded traders</strong> worldwide. Here is everything you need to know to get started:</p><div style="display:grid;gap:12px;margin:24px 0">${['1. Choose your challenge — pick from $25K to $200K account sizes','2. Pass Phase 1 — hit 8% profit target with max 5% daily loss','3. Pass Phase 2 — hit 5% profit target to confirm consistency','4. Get funded — receive your live funded account within 24 hours','5. Get paid — request payouts every 14 days, processed same day'].map((s,i) => `<div style="background:#1C2A3A;border-radius:8px;padding:14px 16px;font-size:14px;color:#CBD5E1">${s}</div>`).join('')}</div><div style="text-align:center;margin:28px 0"><a href="{{dashboard_url}}" style="display:inline-block;background:#3F8FE0;color:#fff;text-decoration:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:15px">Go to Your Dashboard →</a></div></div><div style="padding:16px 32px;border-top:1px solid #1E2535;text-align:center"><p style="color:#475569;font-size:12px;margin:0">Questions? <a href="{{support_url}}" style="color:#3F8FE0">Contact Support</a></p></div></div>`,
+      variables: ['first_name','dashboard_url','support_url'],
+    },
+    {
+      key: 'monthly_performance_report',
+      label: 'Monthly Performance Report',
+      subject: 'Your {{month}} trading report is ready, {{first_name}}',
+      html_body: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0B1120;color:#F1F5F9;border-radius:16px;overflow:hidden"><div style="background:linear-gradient(135deg,#1B3A6B,#0B1120);padding:32px;display:flex;align-items:center;justify-content:space-between"><div style="font-size:18px;font-weight:900;color:#fff">HOLA PRIME</div><div style="color:#64748B;font-size:13px">{{month}} Report</div></div><div style="padding:32px"><h1 style="font-size:20px;font-weight:800;margin:0 0 20px">Your Monthly Summary</h1><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px"><div style="background:#1C2A3A;border-radius:10px;padding:16px;text-align:center"><div style="font-size:24px;font-weight:900;color:#38BA82">{{total_return}}</div><div style="font-size:12px;color:#64748B;margin-top:4px">Total Return</div></div><div style="background:#1C2A3A;border-radius:10px;padding:16px;text-align:center"><div style="font-size:24px;font-weight:900;color:#3F8FE0">{{trading_days}}</div><div style="font-size:12px;color:#64748B;margin-top:4px">Trading Days</div></div><div style="background:#1C2A3A;border-radius:10px;padding:16px;text-align:center"><div style="font-size:24px;font-weight:900;color:#F5B326">{{win_rate}}</div><div style="font-size:12px;color:#64748B;margin-top:4px">Win Rate</div></div><div style="background:#1C2A3A;border-radius:10px;padding:16px;text-align:center"><div style="font-size:24px;font-weight:900;color:#A78BFA">{{best_day}}</div><div style="font-size:12px;color:#64748B;margin-top:4px">Best Day</div></div></div><div style="text-align:center"><a href="{{dashboard_url}}" style="display:inline-block;background:#3F8FE0;color:#fff;text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:700">View Full Report →</a></div></div><div style="padding:16px 32px;border-top:1px solid #1E2535;text-align:center"><p style="color:#475569;font-size:12px;margin:0">Hola Prime Markets · <a href="{{support_url}}" style="color:#3F8FE0">Support</a></p></div></div>`,
+      variables: ['first_name','month','total_return','trading_days','win_rate','best_day','dashboard_url','support_url'],
+    },
+  ];
+
+  for (const tmpl of campaignTemplates) {
+    await q(
+      `INSERT INTO email_templates (key, label, subject, html_body, variables)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (key) DO UPDATE SET label=$2, subject=$3, html_body=$4`,
+      [tmpl.key, tmpl.label, tmpl.subject, tmpl.html_body, JSON.stringify(tmpl.variables)]
+    );
+  }
   console.log('✅ Email Templates: 2 rich sample templates seeded');
 
   // 11. WhatsApp Templates

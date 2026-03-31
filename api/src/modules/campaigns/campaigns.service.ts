@@ -151,42 +151,42 @@ async function launchEmailCampaign(
 }
 
 // ── Email templates ───────────────────────────────────────────────────────────
-export async function listTemplates(category?: string) {
-  const where = category ? 'WHERE category = $1' : '';
+export async function listTemplates(_category?: string) {
   return query(
-    `SELECT id, name, slug, subject, category, preview_text, is_active, created_at, updated_at
-     FROM email_templates ${where} ORDER BY name`,
-    category ? [category] : [],
+    `SELECT id, key, label AS name, subject, enabled AS is_active, updated_at
+     FROM email_templates ORDER BY label`,
   );
 }
 
 export async function getTemplate(id: string) {
-  return queryOne('SELECT * FROM email_templates WHERE id = $1', [id]);
+  return queryOne('SELECT * FROM email_templates WHERE id=$1 OR key=$1', [id]);
 }
 
 export async function upsertTemplate(data: {
-  id?: string; name: string; slug: string; subject: string;
-  htmlBody: string; textBody?: string; previewText?: string;
-  category?: string; variables?: string[];
+  id?: string; name: string; slug?: string; key?: string;
+  label?: string; subject: string;
+  htmlBody: string; textBody?: string;
+  variables?: string[];
   adminId: string;
 }) {
+  const label = data.label ?? data.name;
+  const key   = (data.key ?? data.slug ?? label.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '')).slice(0, 60);
   if (data.id) {
-    await query(`
-      UPDATE email_templates
-      SET name=$1, slug=$2, subject=$3, html_body=$4, text_body=$5,
-          preview_text=$6, category=$7, variables=$8, version=version+1, updated_at=NOW()
-      WHERE id=$6
-    `, [data.label ?? data.name, data.key ?? data.slug, data.subject,
-        data.htmlBody, data.textBody ?? null,
-        data.id]);
+    await query(
+      `UPDATE email_templates
+       SET label=$1, subject=$2, html_body=$3, text_body=$4, variables=$5, updated_at=NOW()
+       WHERE id=$6`,
+      [label, data.subject, data.htmlBody, data.textBody ?? null,
+       JSON.stringify(data.variables ?? []), data.id]
+    );
     return data.id;
   }
-  const [t] = await query<{ id: string }>(`
-    INSERT INTO email_templates (label, key, subject, html_body, text_body, variables)
-    VALUES ($1,$2,$3,$4,$5,$6) RETURNING id
-  `, [data.label ?? data.name, data.key ?? data.slug, data.subject,
-      data.htmlBody, data.textBody ?? null,
-      JSON.stringify(data.variables ?? [])]);
+  const [t] = await query<{ id: string }>(
+    `INSERT INTO email_templates (key, label, subject, html_body, text_body, variables)
+     VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
+    [key, label, data.subject, data.htmlBody, data.textBody ?? null,
+     JSON.stringify(data.variables ?? [])]
+  );
   return t.id;
 }
 
