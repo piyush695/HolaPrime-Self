@@ -5,6 +5,9 @@ import {
   listAdminUsers, createAdminUser, updateAdminUser, resetAdminPassword,
   getPlatformHealth, getAuditLog,
 } from './settings.service.js';
+import { testSendGrid, listSendGridTemplates } from './sendgrid.service.js';
+import { clearProviderCache } from './email.dispatcher.js';
+import { testMailmodo } from './mailmodo.service.js';
 
 export async function settingsRoutes(app: FastifyInstance): Promise<void> {
   app.addHook('onRequest', app.authenticate);
@@ -76,5 +79,45 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
       limit:   parseInt(q.limit ?? '50', 10),
       adminId: q.adminId,
     }));
+  });
+
+  // ── Email provider test endpoints ──────────────────────────────────────────
+  app.post('/email/test-sendgrid', async (req, reply) => {
+    const { apiKey, fromEmail, fromName, testRecipient } = req.body as any;
+    if (!apiKey || !testRecipient) return reply.status(400).send({ error: 'apiKey and testRecipient required' });
+    const result = await testSendGrid(apiKey, fromEmail ?? 'noreply@holaprime.com', fromName ?? 'Hola Prime', testRecipient);
+    clearProviderCache();
+    return reply.send(result);
+  });
+
+  app.post('/email/test-mailmodo', async (req, reply) => {
+    const { apiKey } = req.body as any;
+    if (!apiKey) return reply.status(400).send({ error: 'apiKey required' });
+    const result = await testMailmodo(apiKey);
+    clearProviderCache();
+    return reply.send(result);
+  });
+
+  app.get('/email/sendgrid-templates', async (req, reply) => {
+    const { apiKey } = req.query as any;
+    if (!apiKey) return reply.status(400).send({ error: 'apiKey required' });
+    const templates = await listSendGridTemplates(apiKey);
+    return reply.send(templates);
+  });
+
+  app.post('/email/reload-config', async (_req, reply) => {
+    clearProviderCache();
+    return reply.send({ ok: true, message: 'Email provider config reloaded' });
+  });
+
+  app.post('/admins/invite', async (req, reply) => {
+    const { email, firstName, lastName, role, tempPassword } = req.body as any;
+    const admin = (req as any).admin;
+    if (!email || !firstName || !role) return reply.status(400).send({ error: 'email, firstName, role required' });
+    const { sendAdminInviteEmail } = await import('./email.dispatcher.js');
+    const loginUrl = process.env.ADMIN_URL ?? 'https://holaprime-admin-panel-688552756595.asia-south1.run.app/login';
+    const pass = tempPassword ?? Math.random().toString(36).slice(2, 10).toUpperCase();
+    await sendAdminInviteEmail(email, firstName, `${admin.first_name} ${admin.last_name}`, role, loginUrl, pass);
+    return reply.status(201).send({ ok: true, message: `Invite sent to ${email}` });
   });
 }

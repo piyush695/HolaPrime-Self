@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { createOTP, verifyOTP, checkRateLimit } from './otp.service.js';
-import { dispatchEmail } from '../settings/email.dispatcher.js';
+import { sendOtpEmail } from '../settings/email.dispatcher.js';
 
 export async function otpRoutes(app: FastifyInstance) {
   // POST /otp/send — send a 6-digit OTP to an email
@@ -31,17 +31,7 @@ export async function otpRoutes(app: FastifyInstance) {
       email_change:   `Your email change verification code is <strong style="font-size:28px;letter-spacing:4px;color:#4F8CF7">${otp}</strong><br><br>This code expires in 10 minutes.`,
     };
 
-    await dispatchEmail({
-      to:      email,
-      subject: subjectMap[purpose],
-      html:    `
-        <div style="font-family:'Helvetica Neue',sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#0B1120;color:#F1F5F9;border-radius:12px;">
-          <img src="https://holaprime.com/logo-white.png" alt="Hola Prime" style="height:40px;margin-bottom:28px;"/>
-          <h2 style="font-size:22px;font-weight:700;margin-bottom:12px;">Verification Code</h2>
-          <p style="color:#94A3B8;margin-bottom:24px;">${bodyMap[purpose]}</p>
-          <p style="font-size:12px;color:#64748B;">Hola Prime · FSC Licensed GB24203729</p>
-        </div>`,
-    }).catch(() => {}); // Don't fail if email is misconfigured during setup
+    await sendOtpEmail(email, firstName ?? '', otp, purpose === 'password_reset' ? 'password_reset' : 'registration').catch(() => {}); // Don't fail if email is misconfigured during setup
 
     // In dev mode: return the OTP in the response for testing
     const isDev = process.env.NODE_ENV !== 'production';
