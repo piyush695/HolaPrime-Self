@@ -16,6 +16,7 @@ const NAV = [
   { to:'/utm-builder',  icon:'🔗', label:'UTM Builder' },
   { to:'/crm',          icon:'🎯', label:'CRM' },
   { to:'/campaigns',    icon:'📧', label:'Campaigns' },
+  { to:'/audiences',    icon:'👥', label:'Audiences' },
   { to:'/whatsapp',          icon:'💬', label:'WhatsApp Inbox' },
   { to:'/whatsapp-templates', icon:'📋', label:'WA Templates' },
   { to:'/affiliates',   icon:'🔗', label:'Affiliates' },

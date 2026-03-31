@@ -209,6 +209,7 @@ export default function Campaigns() {
   const [selected, setSelected] = useState<any>(null);
   const [showNew, setShowNew]   = useState(false);
   const [showNewTmpl, setShowNewTmpl] = useState(false);
+  const [audienceFor, setAudienceFor] = useState<string|null>(null);
   const [newCamp, setNewCamp] = useState({ name:'', type:'email', templateId:'' });
   const qc = useQueryClient();
 
@@ -238,10 +239,13 @@ export default function Campaigns() {
 
   const createCampaign = useMutation({
     mutationFn: (d: typeof newCamp) => api.post('/campaigns', d),
-    onSuccess: () => {
+    onSuccess: (res: any) => {
       qc.invalidateQueries({ queryKey:['campaigns'] });
       setShowNew(false);
       setNewCamp({ name:'', type:'email', templateId:'' });
+      // Open audience selector for the new campaign
+      const id = res?.data?.id;
+      if (id) setAudienceFor(id);
     },
   });
 
@@ -271,8 +275,15 @@ export default function Campaigns() {
       render: (r: any) => <span style={{ color:'#38BA82', fontWeight:600 }}>{fmt(parseInt(r.open_count ?? '0'), parseInt(r.sent_count ?? '0'))}</span> },
     { key:'click_rate', label:'Click Rate', width:100,
       render: (r: any) => <span style={{ color:'#3F8FE0', fontWeight:600 }}>{fmt(parseInt(r.click_count ?? '0'), parseInt(r.sent_count ?? '0'))}</span> },
-    { key:'actions', label:'', width:80,
-      render: (r: any) => <Btn size="sm" onClick={() => setSelected(r)}>View</Btn> },
+    { key:'actions', label:'', width:140,
+      render: (r: any) => (
+        <div style={{ display:'flex', gap:6 }}>
+          <Btn size="sm" onClick={() => setAudienceFor(r.id)} variant="secondary" style={{ padding:'4px 10px', fontSize:11 }}>
+            👥 Audiences
+          </Btn>
+          <Btn size="sm" onClick={() => setSelected(r)}>View</Btn>
+        </div>
+      ) },
   ];
 
   const templateColumns = [
@@ -325,6 +336,9 @@ export default function Campaigns() {
           }}>{t.label}</button>
         ))}
       </div>
+
+      {/* Audience selector */}
+      {audienceFor && <AudienceSelector campaignId={audienceFor} onClose={() => setAudienceFor(null)} />}
 
       {/* New template modal */}
       {showNewTmpl && (

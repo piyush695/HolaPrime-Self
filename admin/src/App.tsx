@@ -18,6 +18,7 @@ import Campaigns   from './pages/phase2/Campaigns.js';
 import WhatsApp          from './pages/phase2/WhatsApp.js';
 import WhatsAppTemplates from './pages/phase2/WhatsAppTemplates.js';
 import Onboarding, { useOnboarding } from './components/Onboarding.js';
+import Audiences from './pages/phase2/Audiences.js';
 import Affiliates  from './pages/phase2/Affiliates.js';
 import Attribution from './pages/phase2/Attribution.js';
 import Retention   from './pages/phase2/Retention.js';
@@ -87,6 +88,7 @@ export default function App() {
                   <Route path="/risk"        element={<Risk />} />
                   <Route path="/crm"         element={<CRM />} />
                   <Route path="/campaigns"   element={<Campaigns />} />
+                  <Route path="/audiences"           element={<Audiences />} />
                   <Route path="/whatsapp"            element={<WhatsApp />} />
                   <Route path="/whatsapp-templates" element={<WhatsAppTemplates />} />
                   <Route path="/affiliates"  element={<Affiliates />} />
