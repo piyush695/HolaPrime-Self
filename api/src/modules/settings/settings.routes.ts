@@ -66,6 +66,28 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
     return reply.send({ ok: true });
   });
 
+  // ── Delete admin user ────────────────────────────────────────────────────────
+  app.delete('/admins/:id', async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const admin  = (req as any).admin;
+    // Cannot delete yourself
+    if (id === admin.id) return reply.status(400).send({ error: 'You cannot delete your own account' });
+    // Only superadmin can delete other admins; admins can delete non-superadmin
+    const target = await (await import('../../db/index.js')).queryOne<{ role: string }>(
+      'SELECT role FROM admin_users WHERE id=$1', [id]
+    );
+    if (!target) return reply.status(404).send({ error: 'Admin not found' });
+    if (target.role === 'superadmin' && admin.role !== 'superadmin') {
+      return reply.status(403).send({ error: 'Only Super Admins can remove other Super Admins' });
+    }
+    await (await import('../../db/index.js')).query('DELETE FROM admin_users WHERE id=$1', [id]);
+    await (await import('../../db/index.js')).query(
+      'INSERT INTO admin_audit_log (admin_id,action,entity_type,entity_id) VALUES ($1,$2,$3,$4)',
+      [admin.id, 'admin_user.deleted', 'admin_user', id]
+    );
+    return reply.send({ ok: true });
+  });
+
   // ── Change own password (authenticated admin, no id needed) ─────────────────
   app.post('/admins/me/change-password', async (req, reply) => {
     const admin = (req as any).admin;

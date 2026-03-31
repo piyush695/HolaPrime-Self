@@ -49,12 +49,19 @@ export default function IntegrationsHub() {
     const integ = integrations.find(i => i.service === service);
     setSelected(service);
     setIsActive(integ?.is_active ?? false);
-    setEditCreds(integ?.credentials ?? {});
+    // Store real credentials for editing - strip masked values (replace with empty so user must re-enter)
+    // Non-sensitive fields keep their values; sensitive (masked) fields show empty so user can retype
+    const creds = integ?.credentials ?? {};
+    const clean: Record<string,string> = {};
+    for (const [k, v] of Object.entries(creds)) {
+      // If value is masked (starts with ••••), clear it so user types fresh
+      clean[k] = String(v).startsWith('••••') ? '' : String(v);
+    }
+    setEditCreds(clean);
     setTestResult(integ?.test_result ?? null);
-    // If creds already saved, show saved view; otherwise go straight to edit
-    const hasCreds = integ?.credentials && Object.keys(integ.credentials).length > 0;
-    setSaved(!!hasCreds);
-    setIsEditing(!hasCreds);
+    // Show saved view if any credentials exist, edit mode if nothing saved yet
+    setSaved(!!integ?.hasCredentials);
+    setIsEditing(!integ?.hasCredentials);
   }
 
   async function save() {
@@ -262,18 +269,19 @@ export default function IntegrationsHub() {
                   </div>
                 ))
               ) : saved ? (
-                // Saved view — show masked summary
+                // Saved view — show ✓ Set or Not set per field using credentialStatus
                 <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
                   {selectedSchema.map((field: any) => {
-                    const val = editCreds[field.key];
-                    const isSecret = field.type === 'password';
-                    const displayVal = !val ? <span style={{ color:A.txtC }}>Not set</span>
-                      : isSecret ? <span style={{ color:A.txtB,letterSpacing:3 }}>{'•'.repeat(Math.min(16, val.length))}</span>
-                      : <span style={{ color:A.white }}>{val.length > 40 ? val.slice(0,20)+'…'+val.slice(-8) : val}</span>;
+                    const isSet = selectedInteg?.credentialStatus?.[field.key] ?? false;
                     return (
                       <div key={field.key} style={{ display:'flex',justifyContent:'space-between',padding:'10px 14px',background:A.surf2,borderRadius:8,alignItems:'center' }}>
-                        <span style={{ fontSize:12,color:A.txtB,fontWeight:600 }}>{field.label}</span>
-                        <span style={{ fontSize:12,fontFamily:'monospace' }}>{displayVal}</span>
+                        <div>
+                          <span style={{ fontSize:12,color:A.txtB,fontWeight:600 }}>{field.label}</span>
+                          {field.required && !isSet && <span style={{ fontSize:10,color:A.red,marginLeft:6 }}>Required</span>}
+                        </div>
+                        <span style={{ fontSize:12,fontWeight:700,color:isSet ? A.green : A.txtC }}>
+                          {isSet ? '✓ Set' : '— Not set'}
+                        </span>
                       </div>
                     );
                   })}

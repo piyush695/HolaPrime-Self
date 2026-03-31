@@ -336,6 +336,11 @@ export default function Settings() {
     onSuccess: () => { qc.invalidateQueries({ queryKey:['admins'] }); setEditAdmin(null); },
   });
 
+  const deleteAdmin = useMutation({
+    mutationFn: (id: string) => api.delete(`/settings/admins/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey:['admins'] }),
+  });
+
   const SETTINGS_FIELDS = [
     { key:'platform_name',     label:'Platform Name',     type:'text' },
     { key:'support_email',     label:'Support Email',     type:'email' },
@@ -476,6 +481,17 @@ export default function Settings() {
                         border:'1px solid #353947', background:'#252931', color:'#8892B0', fontSize:11, cursor:'pointer' }}>
                         {a.id === me?.id ? 'My Password' : 'Reset Password'}
                       </button>
+                      {a.id !== me?.id && (me?.role === 'superadmin' || a.role !== 'superadmin') && (
+                        <button onClick={() => {
+                          if (confirm(`Remove ${a.first_name} ${a.last_name} from the admin panel? This cannot be undone.`)) {
+                            deleteAdmin.mutate(a.id);
+                          }
+                        }} style={{ padding:'5px 12px', borderRadius:6,
+                          border:'1px solid rgba(255,76,106,.3)', background:'rgba(255,76,106,.05)',
+                          color:'#FF4C6A', fontSize:11, cursor:'pointer' }}>
+                          Remove
+                        </button>
+                      )}
                     </div>
                   </Card>
                 ))}
