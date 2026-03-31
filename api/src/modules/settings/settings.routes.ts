@@ -66,6 +66,45 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
     return reply.send({ ok: true });
   });
 
+  // ── Change own password (authenticated admin, no id needed) ─────────────────
+  app.post('/admins/me/change-password', async (req, reply) => {
+    const admin = (req as any).admin;
+    const { currentPassword, newPassword } = z.object({
+      currentPassword: z.string().min(1),
+      newPassword:     z.string().min(8),
+    }).parse(req.body);
+    // Verify current password
+    const row = await (await import('../../db/index.js')).queryOne<{ password_hash: string }>(
+      'SELECT password_hash FROM admin_users WHERE id=$1', [admin.id]
+    );
+    if (!row) return reply.status(404).send({ error: 'Admin not found' });
+    const bcrypt = await import('bcryptjs');
+    const valid = await bcrypt.default.compare(currentPassword, row.password_hash);
+    if (!valid) return reply.status(400).send({ error: 'Current password is incorrect' });
+    await resetAdminPassword(admin.id, newPassword, admin.id);
+    return reply.send({ ok: true, message: 'Password changed successfully' });
+  });
+
+  // ── Get own profile ────────────────────────────────────────────────────────
+  app.get('/admins/me', async (req, reply) => {
+    const admin = (req as any).admin;
+    const row = await (await import('../../db/index.js')).queryOne(
+      'SELECT id, email, first_name, last_name, role, is_active, last_login_at, mfa_enabled, created_at FROM admin_users WHERE id=$1',
+      [admin.id]
+    );
+    return reply.send(row);
+  });
+
+  // ── Update own profile ─────────────────────────────────────────────────────
+  app.patch('/admins/me', async (req, reply) => {
+    const admin = (req as any).admin;
+    const { firstName, lastName } = req.body as any;
+    if (firstName || lastName) {
+      await updateAdminUser(admin.id, { firstName, lastName }, admin.id);
+    }
+    return reply.send({ ok: true });
+  });
+
   // ── Platform health ─────────────────────────────────────────────────────────
   app.get('/platform-health', async (_req, reply) =>
     reply.send(await getPlatformHealth()),

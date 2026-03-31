@@ -17,6 +17,7 @@ import CRM         from './pages/phase2/CRM.js';
 import Campaigns   from './pages/phase2/Campaigns.js';
 import WhatsApp          from './pages/phase2/WhatsApp.js';
 import WhatsAppTemplates from './pages/phase2/WhatsAppTemplates.js';
+import Onboarding, { useOnboarding } from './components/Onboarding.js';
 import Affiliates  from './pages/phase2/Affiliates.js';
 import Attribution from './pages/phase2/Attribution.js';
 import Retention   from './pages/phase2/Retention.js';
@@ -56,7 +57,13 @@ const qc = new QueryClient({ defaultOptions: { queries: { retry:1, staleTime:30_
 
 function Protected({ children }: { children: React.ReactNode }) {
   const isAuth = useAuthStore(s => s.isAuth);
-  return isAuth ? <>{children}</> : <Navigate to="/login" replace />;
+  const { show: showOnboarding, dismiss: dismissOnboarding } = useOnboarding();
+  return isAuth ? (
+    <>
+      {showOnboarding && <Onboarding onDismiss={dismissOnboarding} />}
+      {children}
+    </>
+  ) : <Navigate to="/login" replace />;
 }
 
 export default function App() {
